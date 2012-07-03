@@ -4,15 +4,21 @@ $transaction_status = $_POST["transactionstatus"];
 $transaction_id = $_POST["oid"];
 $amount = $_POST["total"];
 
-$path = "/home/sites/kineticpulse.net/public_html/ee/logs/";
-#set your logfile directory path here
-$FILE = fopen($path."$transaction_id-return.csv", "a");
-fwrite($FILE, "orderID='$transaction_id',");
-fwrite($FILE, "status='$transaction_status',");
-fwrite($FILE, "total='$amount'");
 
-fclose($FILE);
+$dbhost = 'localhost';
+$dbuser = 'web156-eedev';
+$dbpass = 'EEDev';
+
+$conn = mysql_connect($dbhost, $dbuser, $dbpass) or die ('Error connecting to mysql');
+
+$dbname = 'web156-eedev';
+mysql_select_db($dbname, $conn);
 
 
 
-?>
+mysql_query("INSERT INTO exp_store_epdq (transaction_id, transaction_status, transaction_amount, transaction_time)
+VALUES ('$transaction_id', '$transaction_status','$amount',NOW())");
+
+mysql_close($conn)
+
+?>;

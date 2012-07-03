@@ -66,29 +66,24 @@ class Merchant_barclaycard extends Merchant_driver {
 
 	}
 
-	public function _process_return() {
+	public function purchase_return() {
 
-		//$transaction_status = $this -> CI -> input -> post("transactionstatus");
-		//$transaction_id = $this -> CI -> input -> post("oid");
-		//$amount = $this -> CI -> input -> post("total");
-		//$transaction_status = $_POST["transactionstatus"];
-		//$transaction_id =  $_POST["oid"];
-		//$amount = $_POST["total"];
-	$this->EE =& get_instance();
-	$this->EE->load->library('firephp');
-	$this->EE->firephp->log('purchase_return called!!');
-		exit;
-		$path = "/home/sites/kineticpulse.net/public_html/ee/logs/";
+		$oid = $this -> CI -> input -> get("oid");
 
-		$FILE = fopen($path."return.csv", "a");
-		$retArray = fgetcsv($FILE);
-		$transaction_status = $retArray["status"];
-		$amount = $retArray["total"];
-		$transaction_id = $retArray["orderID"];
+		$this->EE =& get_instance();
+		//$this->EE->load->library('firephp');
+		//$this->EE->firephp->log($oid, 'CI Post id');
+	
 		
+		$results = $this->EE->db->query("SELECT * FROM exp_store_epdq where transaction_id = '$oid' ");
+
+		
+		$transaction_status = $results->row('transaction_status');
+		$amount = $results->row('transaction_amount');
+
 		if ($transaction_status == 'DECLINED') {
 
-			return new Merchant_response(Merchant_response::FAILED, $transaction_status, $transaction_id, $amount);
+			return new Merchant_response(Merchant_response::FAILED, 'Sorry - payment was declined. Please contact your card issuer or try another card', $transaction_id, $amount);
 
 		} elseif ($transaction_status == 'Success') {
 
@@ -127,32 +122,7 @@ class Merchant_barclaycard extends Merchant_driver {
 		return $strEPDQ;
 	}
 
-	private function csv_in_array($url, $delm = ";", $encl = "\"") {
 
-		$csvxrow = file($url);
-		// ---- csv rows to array ----
-
-		$csvxrow[0] = chop($csvxrow[0]);
-		$csvxrow[0] = str_replace($encl, '', $csvxrow[0]);
-		$keydata = explode($delm, $csvxrow[0]);
-		$keynumb = count($keydata);
-
-		$anzdata = count($csvxrow);
-		$z = 0;
-		for ($x = 1; $x < $anzdata; $x++) {
-			$csvxrow[$x] = chop($csvxrow[$x]);
-			$csvxrow[$x] = str_replace($encl, '', $csvxrow[$x]);
-			$csv_data[$x] = explode($delm, $csvxrow[$x]);
-			$i = 0;
-			foreach ($keydata as $key) {
-				$out[$z][$key] = $csv_data[$x][$i];
-				$i++;
-			}
-			$z++;
-		}
-
-		return $out;
-	}
 
 }
 
